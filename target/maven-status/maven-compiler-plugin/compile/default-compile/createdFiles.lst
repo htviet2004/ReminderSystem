@@ -1,0 +1,8 @@
+model\Task.class
+controller\LoginServlet.class
+dao\TaskDAO.class
+controller\TaskServlet.class
+dao\UserDAO.class
+util\DBUtil.class
+controller\RegisterServlet.class
+model\User.class
