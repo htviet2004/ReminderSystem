@@ -14,52 +14,40 @@ import java.time.format.DateTimeFormatter;
 public class TaskDAO {
 
     public boolean insertTask(Task task) {
-        String sql = "INSERT INTO tasks (user_id, title, description, deadline) VALUES (?, ?, ?, ?)";
-        try (Connection conn = DBUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+    String sql = "INSERT INTO tasks (user_id, title, description, deadline) VALUES (?, ?, ?, ?)";
+    try (Connection conn = DBUtil.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            // Chuyển đổi định dạng deadline từ yyyy-MM-dd'T'HH:mm sang TIMESTAMP
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
-            LocalDateTime deadlineLocal = LocalDateTime.parse(task.getDeadline(), formatter);
-            Timestamp deadlineTime = Timestamp.valueOf(deadlineLocal);
-            Timestamp currentTime = new Timestamp(System.currentTimeMillis());
+        // Lưu deadline dưới dạng chuỗi (String)
+        ps.setInt(1, task.getUserId());
+        ps.setString(2, task.getTitle());
+        ps.setString(3, task.getDescription());
+        ps.setString(4, task.getDeadline()); // Lưu deadline dưới dạng chuỗi
 
-            // Kiểm tra logic thời gian (giữ nguyên)
-            if (deadlineTime.before(currentTime)) {
-                System.out.println("Deadline không hợp lệ: nhỏ hơn thời gian hiện tại.");
-                return false; // Không thêm task nếu deadline không hợp lệ
-            }
-
-            // Thiết lập các tham số cho câu lệnh SQL
-            ps.setInt(1, task.getUserId());
-            ps.setString(2, task.getTitle());
-            ps.setString(3, task.getDescription());
-            ps.setTimestamp(4, deadlineTime); // Lưu deadline đã định dạng
-
-            return ps.executeUpdate() > 0;
-        } catch (SQLException | IllegalArgumentException e) {
-            e.printStackTrace();
-            return false;
-        }
+        return ps.executeUpdate() > 0;
+    } catch (SQLException e) {
+        e.printStackTrace();
+        return false;
     }
+}
 
     public List<Task> getTasksByUser(int userId) {
         List<Task> list = new ArrayList<>();
         String sql = "SELECT * FROM tasks WHERE user_id = ?";
         try (Connection conn = DBUtil.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+         PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, userId);
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
-                Task task = new Task(
-                        rs.getInt("id"),
-                        rs.getInt("user_id"),
-                        rs.getString("title"),
-                        rs.getString("description"),
-                        rs.getString("deadline"),
-                        rs.getBoolean("is_notified"));
+                Task task = new Task();
+                task.setId(rs.getInt("id"));
+                task.setUserId(rs.getInt("user_id"));
+                task.setTitle(rs.getString("title"));
+                task.setDescription(rs.getString("description"));
+                task.setDeadline(rs.getString("deadline")); // Lấy deadline dưới dạng chuỗi
+                task.setNotified(rs.getBoolean("is_notified"));
                 list.add(task);
             }
         } catch (SQLException e) {
@@ -141,22 +129,25 @@ public class TaskDAO {
 
     public Task getTaskById(int taskId) {
         Task task = null;
+        String sql = "SELECT * FROM tasks WHERE id = ?";
         try (Connection conn = DBUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM tasks WHERE id = ?")) {
-            stmt.setInt(1, taskId);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                task = new Task();
-                task.setId(rs.getInt("id"));
-                task.setTitle(rs.getString("title"));
-                task.setDescription(rs.getString("description"));
-                task.setDeadline(rs.getTimestamp("deadline").toString());
-                task.setNotified(rs.getBoolean("notified"));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+        stmt.setInt(1, taskId);
+        ResultSet rs = stmt.executeQuery();
+        if (rs.next()) {
+            task = new Task();
+            task.setId(rs.getInt("id"));
+            task.setUserId(rs.getInt("user_id"));
+            task.setTitle(rs.getString("title"));
+            task.setDescription(rs.getString("description"));
+            task.setDeadline(rs.getString("deadline")); // Lấy deadline dưới dạng chuỗi
+            task.setNotified(rs.getBoolean("is_notified"));
         }
-        return task;
+    } catch (SQLException e) {
+        e.printStackTrace();
     }
+    return task;
+}
 }
 
