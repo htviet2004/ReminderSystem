@@ -10,10 +10,50 @@
 <body>
     <h2>Sửa Công Việc</h2>
     <%
-        int taskId = Integer.parseInt(request.getParameter("taskId"));
-        TaskDAO taskDAO = new TaskDAO();
-        Task task = taskDAO.getTaskById(taskId);
+    String taskIdParam = request.getParameter("taskId");
+    Task task = null;
+
+    if (taskIdParam != null) {
+        try {
+            int taskId = Integer.parseInt(taskIdParam);
+            TaskDAO taskDAO = new TaskDAO();
+            task = taskDAO.getTaskById(taskId);
+
+            if (task == null) {
     %>
+                <p style="color:red;">Không tìm thấy công việc với ID: <%= taskId %>.</p>
+                <p><a href="task-list.jsp">Quay lại danh sách công việc</a></p>
+    <%
+            }
+        } catch (NumberFormatException e) {
+    %>
+            <p style="color:red;">ID công việc không hợp lệ.</p>
+            <p><a href="task-list.jsp">Quay lại danh sách công việc</a></p>
+    <%
+        }
+    } else {
+    %>
+        <p style="color:red;">Không tìm thấy ID công việc.</p>
+        <p><a href="task-list.jsp">Quay lại danh sách công việc</a></p>
+    <%
+    }
+
+    if (task != null) {
+        String deadlineFormatted = "";
+        if (task.getDeadline() != null) {
+            try {
+                // Chuyển đổi timestamp thành định dạng yyyy-MM-dd'T'HH:mm
+                long millis = Long.parseLong(task.getDeadline());
+                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
+                deadlineFormatted = sdf.format(new java.util.Date(millis));
+            } catch (NumberFormatException e) {
+                // Nếu không phải timestamp, giữ nguyên giá trị deadline
+                deadlineFormatted = task.getDeadline();
+            }
+        }
+    %>
+
+    <!-- Form sửa task nếu có -->
     <form action="TaskServlet" method="post">
         <input type="hidden" name="action" value="edit">
         <input type="hidden" name="taskId" value="<%= task.getId() %>">
@@ -25,9 +65,20 @@
         <textarea id="description" name="description" required><%= task.getDescription() %></textarea><br><br>
 
         <label for="deadline">Hạn chót:</label><br>
-        <input type="datetime-local" id="deadline" name="deadline" value="<%= task.getDeadline() %>" required><br><br>
+        <input type="datetime-local" id="deadline" name="deadline" value="<%= deadlineFormatted %>" required><br><br>
 
         <input type="submit" value="Cập nhật">
     </form>
+
+    <%
+    }
+    %>
+    <p><a href="task-list.jsp">Quay lại danh sách công việc</a></p>
+
+    <%-- Hiển thị thông báo nếu có --%>
+    <% String message = request.getParameter("message"); %>
+    <% if (message != null) { %>
+        <p style="color:green;"><%= message %></p>
+    <% } %>
 </body>
 </html>

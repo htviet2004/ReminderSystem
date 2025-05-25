@@ -16,7 +16,6 @@ public class TaskServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
 
-        // Lấy userId từ session
         HttpSession session = request.getSession();
         Integer userId = (Integer) session.getAttribute("userId");
 
@@ -25,17 +24,28 @@ public class TaskServlet extends HttpServlet {
             return;
         }
 
+        String action = request.getParameter("action");
         String title = request.getParameter("title");
         String description = request.getParameter("description");
         String deadline = request.getParameter("deadline");
 
-        Task task = new Task(userId, title, description, deadline);
-
-        TaskDAO taskDAO = new TaskDAO();
-        if (taskDAO.insertTask(task)) {
-            response.sendRedirect("task-list.jsp");
+        if ("edit".equals(action)) {
+            // Xử lý cập nhật công việc
+            int taskId = Integer.parseInt(request.getParameter("taskId"));
+            Task updatedTask = new Task(taskId, userId, title, description, deadline, false);
+            if (taskDAO.updateTask(updatedTask)) {
+                response.sendRedirect("task-list.jsp");
+            } else {
+                response.sendRedirect("task-list.jsp?error=1");
+            }
         } else {
-            response.sendRedirect("task-list.jsp?error=1");
+            // Thêm mới công việc
+            Task task = new Task(userId, title, description, deadline);
+            if (taskDAO.insertTask(task)) {
+                response.sendRedirect("task-list.jsp");
+            } else {
+                response.sendRedirect("task-list.jsp?error=1");
+            }
         }
     }
 }

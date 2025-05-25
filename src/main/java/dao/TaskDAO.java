@@ -6,6 +6,8 @@ import util.DBUtil;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -14,24 +16,26 @@ public class TaskDAO {
     public boolean insertTask(Task task) {
         String sql = "INSERT INTO tasks (user_id, title, description, deadline) VALUES (?, ?, ?, ?)";
         try (Connection conn = DBUtil.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            // Chuyển đổi định dạng deadline
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"); // input từ HTML
+            // Chuyển đổi định dạng deadline từ yyyy-MM-dd'T'HH:mm sang TIMESTAMP
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
             LocalDateTime deadlineLocal = LocalDateTime.parse(task.getDeadline(), formatter);
             Timestamp deadlineTime = Timestamp.valueOf(deadlineLocal);
             Timestamp currentTime = new Timestamp(System.currentTimeMillis());
 
-            // Kiểm tra logic thời gian
+            // Kiểm tra logic thời gian (giữ nguyên)
             if (deadlineTime.before(currentTime)) {
                 System.out.println("Deadline không hợp lệ: nhỏ hơn thời gian hiện tại.");
                 return false; // Không thêm task nếu deadline không hợp lệ
             }
 
+            // Thiết lập các tham số cho câu lệnh SQL
             ps.setInt(1, task.getUserId());
             ps.setString(2, task.getTitle());
             ps.setString(3, task.getDescription());
             ps.setTimestamp(4, deadlineTime); // Lưu deadline đã định dạng
+
             return ps.executeUpdate() > 0;
         } catch (SQLException | IllegalArgumentException e) {
             e.printStackTrace();
@@ -100,4 +104,59 @@ public class TaskDAO {
             e.printStackTrace();
         }
     }
+
+    public void deleteTask(int taskId) {
+        String sql = "DELETE FROM tasks WHERE id = ?";
+        try (Connection conn = DBUtil.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, taskId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public boolean updateTask(Task task) {
+    String sql = "UPDATE tasks SET title = ?, description = ?, deadline = ? WHERE id = ?";
+    try (Connection conn = DBUtil.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        // Chuyển đổi định dạng deadline từ yyyy-MM-dd'T'HH:mm sang TIMESTAMP
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"); // input từ HTML
+        LocalDateTime deadlineLocal = LocalDateTime.parse(task.getDeadline(), formatter);
+        Timestamp deadlineTime = Timestamp.valueOf(deadlineLocal);
+
+        ps.setString(1, task.getTitle());
+        ps.setString(2, task.getDescription());
+        ps.setTimestamp(3, deadlineTime); // Lưu deadline đã định dạng
+        ps.setInt(4, task.getId());
+
+        return ps.executeUpdate() > 0;
+    } catch (SQLException | IllegalArgumentException e) {
+        e.printStackTrace();
+        return false;
+    }
 }
+
+    public Task getTaskById(int taskId) {
+        Task task = null;
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM tasks WHERE id = ?")) {
+            stmt.setInt(1, taskId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                task = new Task();
+                task.setId(rs.getInt("id"));
+                task.setTitle(rs.getString("title"));
+                task.setDescription(rs.getString("description"));
+                task.setDeadline(rs.getTimestamp("deadline").toString());
+                task.setNotified(rs.getBoolean("notified"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return task;
+    }
+}
+

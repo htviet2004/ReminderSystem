@@ -34,7 +34,30 @@
     <servlet-name>TaskServlet</servlet-name>
     <url-pattern>/TaskServlet</url-pattern>
   </servlet-mapping>
-
+  <servlet>
+    <servlet-name>EditTaskServlet</servlet-name>
+    <servlet-class>controller.EditTaskServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>EditTaskServlet</servlet-name>
+    <url-pattern>/EditTaskServlet</url-pattern>
+  </servlet-mapping>
+<servlet>
+    <servlet-name>DeleteTaskServlet</servlet-name>
+    <servlet-class>controller.DeleteTaskServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>DeleteTaskServlet</servlet-name>
+    <url-pattern>/DeleteTaskServlet</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <servlet-name>UpdateTaskServlet</servlet-name>
+    <servlet-class>controller.UpdateTaskServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>UpdateTaskServlet</servlet-name>
+    <url-pattern>/UpdateTaskServlet</url-pattern>
+  </servlet-mapping>
   <!-- Welcome page -->
   <welcome-file-list>
     <welcome-file>index.jsp</welcome-file>

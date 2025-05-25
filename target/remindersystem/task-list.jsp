@@ -87,6 +87,17 @@
     <td><%= task.getDescription() %></td>
     <td><%= task.getDeadline() %></td>
     <td><%= task.isNotified() ? "Có" : "Không" %></td>
+    <td>
+        <form action="EditTaskServlet" method="get" style="display:inline;">
+            <input type="hidden" name="id" value="<%= task.getId() %>">
+            <a href="edit-task.jsp?taskId=<%= task.getId() %>">Sửa</a>
+        </form>
+
+        <form action="DeleteTaskServlet" method="post" style="display:inline;" onsubmit="return confirm('Bạn có chắc muốn xoá?');">
+            <input type="hidden" name="id" value="<%= task.getId() %>">
+            <input type="submit" value="Xoá">
+        </form>
+    </td>
 </tr>
 <%
         }
