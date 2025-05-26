@@ -63,4 +63,21 @@ public class UserDAO {
         
         throw new UnsupportedOperationException("Unimplemented method 'getNextId'");
     }
+
+    public String getEmailByUserId(int userId) {
+        String email = null;
+        String sql = "SELECT email FROM users WHERE id = ?";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                email = rs.getString("email");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return email;
+    }
 }

@@ -39,18 +39,7 @@
     }
 
     if (task != null) {
-        String deadlineFormatted = "";
-        if (task.getDeadline() != null) {
-            try {
-                // Chuyển đổi timestamp thành định dạng yyyy-MM-dd'T'HH:mm
-                long millis = Long.parseLong(task.getDeadline());
-                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
-                deadlineFormatted = sdf.format(new java.util.Date(millis));
-            } catch (NumberFormatException e) {
-                // Nếu không phải timestamp, giữ nguyên giá trị deadline
-                deadlineFormatted = task.getDeadline();
-            }
-        }
+        String deadlineFormatted = task.getDeadline(); // Giữ nguyên định dạng yyyy-MM-dd'T'HH:mm
     %>
 
     <!-- Form sửa task nếu có -->

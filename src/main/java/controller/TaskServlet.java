@@ -27,11 +27,12 @@ public class TaskServlet extends HttpServlet {
         String action = request.getParameter("action");
         String title = request.getParameter("title");
         String description = request.getParameter("description");
-        String deadline = request.getParameter("deadline");
+        String deadline = request.getParameter("deadline"); // Deadline giữ nguyên dưới dạng chuỗi
 
         if ("edit".equals(action)) {
             // Xử lý cập nhật công việc
             int taskId = Integer.parseInt(request.getParameter("taskId"));
+            deadline = request.getParameter("deadline"); // Lấy deadline từ form HTML
             Task updatedTask = new Task(taskId, userId, title, description, deadline, false);
             if (taskDAO.updateTask(updatedTask)) {
                 response.sendRedirect("task-list.jsp");

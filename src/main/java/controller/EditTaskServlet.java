@@ -19,7 +19,8 @@ public class EditTaskServlet extends HttpServlet {
                 TaskDAO taskDAO = new TaskDAO();
                 Task task = taskDAO.getTaskById(taskId); // Lấy task từ database
                 if (task != null) {
-                    request.setAttribute("task", task); // Truyền task sang JSP
+                    // Truyền task sang JSP (deadline giữ nguyên dưới dạng chuỗi)
+                    request.setAttribute("task", task);
                     request.getRequestDispatcher("edit-task.jsp").forward(request, response);
                 } else {
                     response.sendRedirect("task-list.jsp?error=notfound");
